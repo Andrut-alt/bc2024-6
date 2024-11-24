@@ -4,6 +4,34 @@ const express = require('express');
 const fs = require('fs').promises;
 const multer = require('multer');
 
+const swaggerJsDoc = require('swagger-jsdoc');
+
+const options = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Notes API",
+            version: "1.0.0",
+            description: "API for managing notes",
+        },
+        servers: [
+            {
+                url: "http://localhost:3000", 
+            },
+        ],
+    },
+    apis: ["./main.js"], // Шлях до вашого основного файлу
+};
+
+const swaggerDocs = swaggerJsDoc(options);
+module.exports = swaggerDocs;
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocs = require('./swagger-config');
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+
 
 const upload = multer();
 const app = express();
@@ -29,7 +57,25 @@ async function noteExists(noteName) {
     }
 }
 
-// GET /notes/<ім'я нотатки>
+
+/**
+ * @swagger
+ * /notes/{noteName}:
+ *   get:
+ *     summary: Get a specific note
+ *     parameters:
+ *       - in: path
+ *         name: noteName
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Name of the note to retrieve
+ *     responses:
+ *       200:
+ *         description: Note retrieved successfully
+ *       404:
+ *         description: Note not found
+ */
 app.get('/notes/:noteName', async (req, res) => {
     try {
         const { noteName } = req.params;
@@ -42,7 +88,30 @@ app.get('/notes/:noteName', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+/**
+ * @swagger
+ * /notes/{noteName}:
+ *   put:
+ *     summary: Update an existing note
+ *     parameters:
+ *       - in: path
+ *         name: noteName
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Name of the note to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         text/plain:
+ *           schema:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Note updated successfully
+ *       404:
+ *         description: Note not found
+ */
 app.put('/notes/:noteName', async (req, res) => {
     try {
         const { noteName } = req.params;
@@ -55,7 +124,24 @@ app.put('/notes/:noteName', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+/**
+ * @swagger
+ * /notes/{noteName}:
+ *   delete:
+ *     summary: Delete a specific note
+ *     parameters:
+ *       - in: path
+ *         name: noteName
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Name of the note to delete
+ *     responses:
+ *       200:
+ *         description: Note deleted successfully
+ *       404:
+ *         description: Note not found
+ */
 
 // DELETE /notes/<ім'я нотатки>
 app.delete('/notes/:noteName', async (req, res) => {
